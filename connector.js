@@ -26,6 +26,20 @@ function rouletteConnector(destination,label){
       items.forEach((item,i)=>{const title=item.textContent.trim();if(['단컷','냔생복','방셀','배너','노래','움짤','공겜'].some(k=>title.normalize('NFC').includes(k)))rows.push({user,id,item:title,count:Number(counts[i].textContent.replace(/,/g,'').trim())});});
     }
     if(!rows.length)return {error:'해당하는 업보 당첨이 없습니다. 기존 정리 목록을 유지합니다.'};
+    // Dates come from matching source records, never the import timestamp.
+    const dated=new Map(),seen=new Set();
+    for(const record of document.querySelectorAll('.alertlist_table tbody tr')){
+      const uid=record.getAttribute('data-uid');if(!uid||seen.has(uid))continue;seen.add(uid);
+      const name=record.querySelector('.name p.pc'),time=record.querySelector('.time p.pc')?.textContent.trim();
+      if(!name||!/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/.test(time||''))continue;
+      const id=(name.querySelector('.sub')?.textContent||'').trim().replace(/^\(|\)$/g,'');
+      const user=Array.from(name.childNodes).filter(n=>n.nodeType===3).map(n=>n.textContent).join('').trim();
+      for(const p of record.querySelectorAll('.roulette p')){
+        const item=p.textContent.trim().replace(/^\(\d+(?:\.\d+)?%\)\s*/,''),key=JSON.stringify([id||user,item]);
+        if(!dated.has(key))dated.set(key,new Map());const days=dated.get(key),date=time.slice(0,10);days.set(date,(days.get(date)||0)+1);
+      }
+    }
+    for(const row of rows){const days=dated.get(JSON.stringify([row.id||row.user,row.item]));if(!days)continue;const dates=[...days].map(([date,count])=>({date,count}));if(dates.reduce((n,d)=>n+d.count,0)<=row.count)row.dates=dates;}
     return {rows};
   }
   function send(){if(output.closed){stop();return;}if(!ready)return;const result=read();const signature=JSON.stringify(result);output.postMessage({type:'roulette-note',token,label,at:new Date().toISOString(),...result,changed:signature!==last},target.origin);last=signature;}
