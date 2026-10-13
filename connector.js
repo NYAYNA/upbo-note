@@ -23,7 +23,7 @@ function rouletteConnector(destination,label){
       const items=[...row.querySelectorAll('.td.roulette .td_box p')];
       const counts=[...row.querySelectorAll('.td.count .td_box p')];
       if(items.length!==counts.length||!user)return {error:'통계 형식을 읽지 못했습니다. 위플랩 통계를 다시 열어 주세요.'};
-      items.forEach((item,i)=>{const title=item.textContent.trim();if(['단컷','냔생복','방셀','배너','노래','움짤','공겜'].some(k=>title.normalize('NFC').includes(k)))rows.push({user,id,item:title,count:Number(counts[i].textContent.replace(/,/g,'').trim())});});
+      items.forEach((item,i)=>{const title=item.textContent.trim();if(!/즉석\s*방셀/.test(title.normalize('NFC'))&&['단컷','냔생복','방셀','배너','노래','움짤','공겜'].some(k=>title.normalize('NFC').includes(k)))rows.push({user,id,item:title,count:Number(counts[i].textContent.replace(/,/g,'').trim())});});
     }
     if(!rows.length)return {error:'해당하는 업보 당첨이 없습니다. 기존 정리 목록을 유지합니다.'};
     // Dates come from matching source records, never the import timestamp.

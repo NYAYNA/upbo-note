@@ -1,7 +1,7 @@
 (function(root){
   'use strict';
   const KEYWORDS=['단컷','냔생복','방셀','배너','노래','움짤','공겜'];
-  const isTask=item=>KEYWORDS.some(word=>String(item).normalize('NFC').includes(word));
+  const isTask=item=>{const name=String(item).normalize('NFC');return !/즉석\s*방셀/.test(name)&&KEYWORDS.some(word=>name.includes(word));};
   function datesOf(dates,count){
     if(dates===undefined)return undefined;
     if(!Array.isArray(dates)||dates.length>20000)throw Error('날짜 내역을 확인해 주세요.');
